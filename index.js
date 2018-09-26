@@ -19,7 +19,6 @@ const logger = debugnyan('pm2-datadog');
 const { global_tags: globalTagsString, host, interval, port } = pmx.initModule();
 const globalTags = [];
 if (globalTagsString) {
-  console.log(globalTagsString);
   let globalTags_ = JSON.parse(globalTagsString);
   if (Array.isArray(globalTags_)) {
     globalTags_.forEach((tag) => {
