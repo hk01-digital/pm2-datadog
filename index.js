@@ -126,7 +126,15 @@ async function start() {
   pm2.list((err, processes) => {
     dogstatsd.gauge('pm2.processes.installed', processes.length);
 
+    let statuses = {};
     for (const process of processes) {
+      if(!statuses[process.name]) {
+          statuses[process.name] = {
+              online: 0,
+              not_oneline: 0,
+          };
+      }
+
       const tags = [
         `application:${process.name}`,
         `instance:${process.pm2_env.NODE_APP_INSTANCE}`
@@ -134,7 +142,25 @@ async function start() {
 
       dogstatsd.gauge('pm2.processes.cpu', process.monit.cpu, tags);
       dogstatsd.gauge('pm2.processes.memory', process.monit.memory, tags);
+      dogstatsd.gauge('pm2.processes.restart_time', process.pm2_env.restart_time, tags);
+      if(process.pm2_env.status === 'online') {
+        statuses[process.name].online++;
+      }else{
+        statuses[process.name].not_oneline++;
+      }
     }
+
+    Object.keys(statuses).forEach((name) => {
+      const tags = [
+          `application:${name}`,
+      ];
+      const total = statuses[name].online + statuses[name].not_oneline;
+      dogstatsd.gauge('pm2.processes.online_rate', statuses[name].online/total, tags);
+      dogstatsd.gauge('pm2.processes.not_online_rate', statuses[name].not_oneline/total, tags);
+      dogstatsd.gauge('pm2.processes.online', statuses[name].online, tags);
+      dogstatsd.gauge('pm2.processes.not_online', statuses[name].not_oneline, tags);
+
+    })
   });
 
   await sleep(interval);
