@@ -16,7 +16,16 @@ const pmx = require('pmx');
  */
 
 const logger = debugnyan('pm2-datadog');
-const { global_tags: globalTags, host, interval, port } = pmx.initModule();
+const { global_tags: globalTagsString, host, interval, port } = pmx.initModule();
+const globalTags = [];
+if (globalTagsString) {
+  let globalTags_ = JSON.parse(globalTagsString);
+  if (Array.isArray(globalTags_)) {
+    globalTags_.forEach((tag) => {
+        globalTags.push(tag)
+    })
+  }
+}
 const dogstatsd = new StatsD({ globalTags, host, port });
 const { CHECKS: { CRITICAL, OK, WARNING } } = dogstatsd;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
