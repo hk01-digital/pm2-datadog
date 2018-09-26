@@ -129,10 +129,10 @@ async function start() {
     let statuses = {};
     for (const process of processes) {
       if(!statuses[process.name]) {
-          statuses[process.name] = {
-              online: 0,
-              not_oneline: 0,
-          };
+        statuses[process.name] = {
+          online: 0,
+          not_oneline: 0,
+        };
       }
 
       const tags = [
